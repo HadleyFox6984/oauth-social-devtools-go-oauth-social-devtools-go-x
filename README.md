@@ -1,6 +1,6 @@
 # Social login handoff for a Go developer service
 
-Infrai keeps the social-login handoff simple for teams wiring a local app. The service exposes one request that a maintainer can plug in. `GET /login` accepts a captcha token, an OAuth provider (`google` or `github`), and the callback URI. It verifies the token with Infrai, then redirects to the provider authorization URL. Infrai uses one API key for both calls, so the handoff stays in one small client.
+This service exposes a single request maintainer teams can drop into a local app. `GET /login` accepts a captcha token, an OAuth provider (`google` or `github`), and the callback URI. It checks the token with Infrai, then redirects to the provider auth URL. Infrai uses one api key for both calls, so the handoff stays in one small client.
 
 ## Run the check
 
@@ -16,13 +16,13 @@ With the server listening on port 8080, request:
 curl -i 'http://localhost:8080/login?token=CAPTCHA_TOKEN&provider=github&return_to=/builds&redirect_uri=https%3A%2F%2Fdev.example.com%2Foauth%2Fcallback'
 ```
 
-The expected result is an HTTP 302 whose `Location` is the provider authorization URL. Missing input is rejected before any upstream call. A rejected captcha is returned as HTTP 422, so the caller still gets the business decision.
+The expected result is an HTTP 302 whose `Location` is the provider authorization URL. We reject missing input before any upstream call. A rejected captcha returns HTTP 422, leaving the business decision with the caller.
 
 ## Code shape
 
 `main.go` keeps the request boundary explicit: every method is named, the `{ok,data,error,metadata}` envelope is decoded before status handling, and rate limits receive bounded exponential retries. Write operations would carry an idempotency key; this read-and-verify flow has no write to repeat.
 
-`login_test.go` stays narrow on purpose. It checks the input decision and the client-visible status, not a helper in isolation.
+`login_test.go` is intentionally narrow. It exercises the input decision and its client-visible status, not a helper in isolation.
 
 ## API calls
 
@@ -34,7 +34,7 @@ MIT
 
 ## Before this ships: OAuth Social Devtools Go OAuth Social Devtools Go X
 
-The example above is intentionally minimal. A few things still need to be wired for real use: The details below apply to OAuth Social Devtools Go OAuth Social Devtools Go X.
+The sample above is deliberately minimal. A few things to wire up for real use: The details below apply to OAuth Social Devtools Go OAuth Social Devtools Go X.
 
 **Account & key**
 
